@@ -1,6 +1,6 @@
 <template>
   <h1>Test</h1>
-  <table>
+  <table @keydown="keyPressed($event)">
     <tr
       v-for="row of fields"
       :key="row"
@@ -10,10 +10,11 @@
         :key="cell"
       >
         <button
+          :ref="`${cell.x}:${cell.y}`"
           class="game-cell"
           :class="{ uncovered: cell.uncovered }"
-          :disabled="cell.uncovered"
           @click="clickCell(cell)"
+          @focus="focus({x: cell.x, y: cell.y})"
         >
           {{ cell.x }}:{{ cell.y }}
         </button>
@@ -53,9 +54,42 @@ export default defineComponent({
       fields,
     }
   },
+  data() {
+    return {
+      selected: {
+        x: -1, y: -1,
+      },
+    }
+  },
   methods: {
     clickCell(cell) {
       cell.uncovered = true
+    },
+    keyPressed($event) {
+      switch($event.key) {
+        case 'ArrowDown':
+        case 's':
+          this.selected.y++
+          break
+        case 'ArrowUp':
+        case 'w':
+          this.selected.y--
+          break
+        case 'ArrowRight':
+        case 'd':
+          this.selected.x++
+          break
+        case 'ArrowLeft':
+        case 'a':
+          this.selected.x--
+          break
+      }
+      this.selected.x = Math.min(Math.max(this.selected.x, 0), this.width - 1)
+      this.selected.y = Math.min(Math.max(this.selected.y, 0), this.height - 1)
+      this.$refs[`${this.selected.x}:${this.selected.y}`].focus()
+    },
+    focus(coords) {
+      this.selected = coords
     },
   },
 })
@@ -78,6 +112,9 @@ table {
         background-color: red;
         &:focus {
           z-index: 10;
+          outline-style: solid;
+          outline-width: 4px;
+          outline-color: rgb(116, 116, 235);
         }
         &.uncovered {
           background-color: green;
