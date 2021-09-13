@@ -1,26 +1,22 @@
 <template>
   <h1>Hello World!</h1>
-  <Example />
+  <Game
+    :width="7"
+    :height="7"
+  />
 </template>
 
 <script>
-import Example from './components/Example.vue'
+import Game from './components/Game.vue'
 
 export default {
   name: 'App',
   components: {
-    Example,
+    Game,
   },
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+
 </style>
