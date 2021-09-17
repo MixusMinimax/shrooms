@@ -1,8 +1,7 @@
 <template>
-  <h1>Test</h1>
   <table @keydown="keyPressed($event)">
     <tr
-      v-for="row of fields"
+      v-for="row of cellsRef.value"
       :key="row"
     >
       <th
@@ -12,9 +11,9 @@
         <button
           :ref="`${cell.x}:${cell.y}`"
           class="game-cell"
-          :class="{ uncovered: cell.uncovered }"
-          @click="clickCell(cell)"
-          @focus="focus({x: cell.x, y: cell.y})"
+          :class="getCellClasses(cell)"
+          @click="onCellClick(cell)"
+          @focus="focus(cell)"
         >
           {{ cell.x }}:{{ cell.y }}
         </button>
@@ -25,10 +24,9 @@
 
 <script>
 import { defineComponent } from '@vue/composition-api'
-import { reactive } from 'vue'
 
 export default defineComponent({
-  name: 'Game',
+  name: 'Field',
   props: {
     width: {
       type: Number,
@@ -38,22 +36,32 @@ export default defineComponent({
       type: Number,
       default: 5,
     },
+    cellsRef: {
+      type: Object,
+      default: new Object(),
+    },
+    onCellClick: {
+      type: Function,
+      default() {},
+    },
+    getCellClasses: {
+      type: Function,
+      default() {},
+    },
+    cellTemplate: {
+      type: Object,
+      default: new Object(),
+    },
   },
   setup(props) {
     let fields = []
     for (let y = 0; y < props.height; ++y) {
       fields.push([])
       for (let x = 0; x < props.width; ++x) {
-        fields[y].push(reactive({
-          x, y,
-          uncovered: false,
-          content: 'dirt',
-        }))
+        fields[y].push(reactive({ x, y, ...cellTemplate }))
       }
     }
-    return {
-      fields,
-    }
+    cellsRef.value = fields
   },
   data() {
     return {
@@ -63,25 +71,26 @@ export default defineComponent({
     }
   },
   methods: {
-    clickCell(cell) {
-      cell.uncovered = true
-    },
     keyPressed($event) {
       switch($event.key) {
         case 'ArrowDown':
         case 's':
+        case 'j':
           this.selected.y++
           break
         case 'ArrowUp':
         case 'w':
+        case 'k':
           this.selected.y--
           break
         case 'ArrowRight':
         case 'd':
+        case 'l':
           this.selected.x++
           break
         case 'ArrowLeft':
         case 'a':
+        case 'h':
           this.selected.x--
           break
       }
@@ -89,8 +98,8 @@ export default defineComponent({
       this.selected.y = Math.min(Math.max(this.selected.y, 0), this.height - 1)
       this.$refs[`${this.selected.x}:${this.selected.y}`].focus()
     },
-    focus(coords) {
-      this.selected = coords
+    focus(cell) {
+      this.selected = { x: cell.x, y: cell.y }
     },
   },
 })
