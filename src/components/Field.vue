@@ -1,7 +1,7 @@
 <template>
   <table @keydown="keyPressed($event)">
     <tr
-      v-for="row of cellsRef.value"
+      v-for="row of cells"
       :key="row"
     >
       <th
@@ -36,7 +36,7 @@ export default defineComponent({
       type: Number,
       default: 5,
     },
-    cellsRef: {
+    cells: {
       type: Object,
       default: new Object(),
     },
@@ -48,20 +48,6 @@ export default defineComponent({
       type: Function,
       default() {},
     },
-    cellTemplate: {
-      type: Object,
-      default: new Object(),
-    },
-  },
-  setup(props) {
-    let fields = []
-    for (let y = 0; y < props.height; ++y) {
-      fields.push([])
-      for (let x = 0; x < props.width; ++x) {
-        fields[y].push(reactive({ x, y, ...cellTemplate }))
-      }
-    }
-    cellsRef.value = fields
   },
   data() {
     return {
@@ -125,17 +111,6 @@ table {
           outline-style: solid;
           outline-width: 4px;
           outline-color: rgb(116, 116, 235);
-        }
-        &.uncovered {
-          background-color: green;
-        }
-        &:not(.uncovered) {
-          &:hover{
-            background-color: rgb(255, 73, 73);
-          }
-          &:active{
-            background-color: rgb(184, 45, 45);
-          }
         }
       }
     }

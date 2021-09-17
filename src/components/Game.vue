@@ -1,34 +1,42 @@
 <template>
   <h1>Test</h1>
-  <table @keydown="keyPressed($event)">
-    <tr
-      v-for="row of fields"
-      :key="row"
-    >
-      <th
-        v-for="cell of row"
-        :key="cell"
-      >
-        <button
-          :ref="`${cell.x}:${cell.y}`"
-          class="game-cell"
-          :class="{ uncovered: cell.uncovered }"
-          @click="clickCell(cell)"
-          @focus="focus({x: cell.x, y: cell.y})"
-        >
-          {{ cell.x }}:{{ cell.y }}
-        </button>
-      </th>
-    </tr>
-  </table>
+  <Field
+    :cells="cells"
+    :width="width"
+    :height="height"
+    :get-cell-classes="cell => ({ uncovered: cell.uncovered })"
+    :on-cell-click="onCellClick"
+  />
+  <Field
+    :cells="cells"
+    :width="width"
+    :height="height"
+    :get-cell-classes="cell => ({ uncovered: cell.uncovered })"
+    :on-cell-click="onCellClick"
+  />
 </template>
 
 <script>
 import { defineComponent } from '@vue/composition-api'
+import Field from './Field'
 import { reactive } from 'vue'
+
+function createCells(width, height, cellTemplate) {
+  let cells = []
+  for (let y = 0; y < height; ++y) {
+    cells.push([])
+    for (let x = 0; x < width; ++x) {
+      cells[y].push(reactive({ x, y, ...cellTemplate }))
+    }
+  }
+  return cells
+}
 
 export default defineComponent({
   name: 'Game',
+  components: {
+    Field,
+  },
   props: {
     width: {
       type: Number,
@@ -40,93 +48,35 @@ export default defineComponent({
     },
   },
   setup(props) {
-    let fields = []
-    for (let y = 0; y < props.height; ++y) {
-      fields.push([])
-      for (let x = 0; x < props.width; ++x) {
-        fields[y].push(reactive({
-          x, y,
-          uncovered: false,
-          content: 'dirt',
-        }))
-      }
-    }
     return {
-      fields,
-    }
-  },
-  data() {
-    return {
-      selected: {
-        x: -1, y: -1,
-      },
+      cells: createCells(props.width, props.height, { uncovered: false }),
     }
   },
   methods: {
-    clickCell(cell) {
+    onCellClick(cell) {
       cell.uncovered = true
-    },
-    keyPressed($event) {
-      switch($event.key) {
-        case 'ArrowDown':
-        case 's':
-          this.selected.y++
-          break
-        case 'ArrowUp':
-        case 'w':
-          this.selected.y--
-          break
-        case 'ArrowRight':
-        case 'd':
-          this.selected.x++
-          break
-        case 'ArrowLeft':
-        case 'a':
-          this.selected.x--
-          break
-      }
-      this.selected.x = Math.min(Math.max(this.selected.x, 0), this.width - 1)
-      this.selected.y = Math.min(Math.max(this.selected.y, 0), this.height - 1)
-      this.$refs[`${this.selected.x}:${this.selected.y}`].focus()
-    },
-    focus(coords) {
-      this.selected = coords
     },
   },
 })
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
+table + table {
+  margin-left: 20px;
+}
 table {
-  border-collapse: collapse;
-  > tr {
-    padding: 0;
-    > th {
-      padding: 0;
-      > button, > button[disabled], > button:disabled {
-        position: relative;
-        color: white;
-        width: 50px;
-        height: 50px;
-        border-width: 0;
-        margin: 0;
-        background-color: red;
-        &:focus {
-          z-index: 10;
-          outline-style: solid;
-          outline-width: 4px;
-          outline-color: rgb(116, 116, 235);
+  display: inline-block;
+  > tr > th {
+    > button, > button[disabled], > button:disabled {
+      &.uncovered {
+        background-color: green;
+      }
+      &:not(.uncovered) {
+        &:hover{
+          background-color: rgb(255, 73, 73);
         }
-        &.uncovered {
-          background-color: green;
-        }
-        &:not(.uncovered) {
-          &:hover{
-            background-color: rgb(255, 73, 73);
-          }
-          &:active{
-            background-color: rgb(184, 45, 45);
-          }
+        &:active{
+          background-color: rgb(184, 45, 45);
         }
       }
     }
